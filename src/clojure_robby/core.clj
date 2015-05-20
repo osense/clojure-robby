@@ -6,9 +6,12 @@
   (reduce * (repeat n x)))
 
 
-(def map-size 20)
-(def tiles [\w \p \g])
-(def actions [\u \d \l \r \p])
+(def map-size 20) ; Size of the map used for robot simulation.
+(def gold-prob 10) ; Probability in 100 that a tile contains gold.
+(def simul-steps 100) ; Steps to allow the robot to make in a simulation.
+(def tiles [\w \p \g]) ; Tiles that populate the map.
+(def actions [\u \d \l \r \p]) ; Actions the robot can take.
+
 
 ; DNA functios
 (defn rand-dna []
@@ -23,7 +26,23 @@
     (if (< (rand-int 100) 50) a b))
   (map choose-rand a b))
 
+
 ; Fitness evaluation functions
+(defn rand-map []
+  "Initializes a map with walls at the boundaries and randomly positioned gold."
+  (def insides (- map-size 2))
+  (def wall-row (vec (repeat map-size \w)))
+  (defn rand-tile []
+    (if (< (rand-int 100) gold-prob) \g \p))
+  (defn rand-row []
+    (vec (concat [\w] (repeatedly insides rand-tile) [\w])))
+  (vec (concat [wall-row] (repeatedly insides rand-row) [wall-row])))
+
+(defn on-index [themap x y]
+  (nth (nth themap y) x))
+
+;(defn simulate [dna onmap]
+ ; "Simulates the DNA on a map. Evaluates to the score the robot achieved in simul-steps."
 
 
 (defn -main
