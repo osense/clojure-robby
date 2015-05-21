@@ -11,7 +11,7 @@
 (def simul-steps 100) ; Steps to allow the robot to make in a simulation.
 (def tiles [\w \p \g]) ; Tiles that populate the map: wall, path, and gold.
 (def actions [\u \d \l \r \p]) ; Actions the robot can take: up, down, left, right, pick up.
-(def dir-vects ['(1 0) '(-1 0) '(-1 0) '(0 1) '(0 0)]) ; Direction vectors, corresponding to the actions.
+(def dir-vects ['(0 -1) '(0 1) '(-1 0) '(1 0) '(0 0)]) ; Direction vectors, corresponding to the actions.
 
 (def mutation-prob 2) ; Probability in 100 that a gene will mutate.
 (def action-penalty 5) ; How many points robot loses when hitting the wall or picking up when it shouldn't.
