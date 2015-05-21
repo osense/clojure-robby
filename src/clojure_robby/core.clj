@@ -62,25 +62,34 @@
 
 (defn get-tile-index [t]
   "Returns the numeric index of a tile."
-  (+ 1 (.indexOf tiles t)))
+  (.indexOf tiles t))
+
+(defn get-action-index [a]
+  "Returns the numeric index of a tile."
+  (.indexOf actions a))
 
 (defn add-vec [v1 v2]
   "Adds 2 vectors"
   (map + v1 v2))
 
+
 (defn simulate [dna the-map]
   "Simulates the DNA on a map. Evaluates to the score the robot achieved in simul-steps."
   (defn make-step [[current-map pos score]]
     "Makes a single step on the map, according to the DNA sequence."
-    (defn nearby-tiles-idx []
-      "Returns the tile indices of nearby tiles in a vector."
+    (defn get-situation []
+      "Returns the tile situation at the current pos."
       (def nearby-tiles (map (fn[v] (get-tile the-map (add-vec pos v))) dir-vects))
       (map get-tile-index nearby-tiles))
-    (def action (nth dna (- (reduce * (nearby-tiles-idx)) 1)))
+    (defn get-action [tile-situation]
+      "Returns the index of action to take when faced with a given tile situation."
+      (def multipliers (map (fn [n] (** (count tiles) n)) (range (count actions))))
+      (reduce + (map * tile-situation multipliers)))
+    (def action (nth dna (get-action (get-situation))))
     (case action
       (\l \r \u \d)
       (do
-        (def new-pos (add-vec pos (nth dir-vects (get-tile-index action))))
+        (def new-pos (add-vec pos (nth dir-vects (get-action-index action))))
         (if (not= \w (get-tile current-map new-pos))
           [current-map new-pos score]
           [current-map pos (- score action-penalty)]))
@@ -98,6 +107,7 @@
   "Takes a bunch of individuals (DNAs) and cross-breeds by fitness."
   (def the-map (rand-map))
   (def ordered (reverse (sort-by (fn[dna] (simulate dna the-map)) individuals)))
+  (println (simulate (first ordered) the-map))
   (def crossed (map (fn [pair]
          (let [[a b] (vec pair)] (cross a b)))
        (partition 2 ordered)))
