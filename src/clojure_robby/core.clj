@@ -12,6 +12,8 @@
 (def tiles [\w \p \g]) ; Tiles that populate the map: wall, path, and gold.
 (def actions [\u \d \l \r \p]) ; Actions the robot can take: up, down, left, right, pick up.
 (def dir-vects ['(1 0) '(-1 0) '(-1 0) '(0 1) '(0 0)]) ; Direction vectors, corresponding to the actions.
+
+(def mutation-prob 2) ; Probability in 100 that a gene will mutate.
 (def action-penalty 5) ; How many points robot loses when hitting the wall or picking up when it shouldn't.
 (def gold-value 10) ; How many points picking up gold is worth.
 
@@ -27,7 +29,13 @@
   "Crosses two vectors of DNA."
   (defn choose-rand [x y]
     (if (< (rand-int 100) 50) x y))
-  (map choose-rand a b))
+  (mapv choose-rand a b))
+
+(defn mutate [dna]
+  "Randomly replace some genes in the DNA."
+  (defn mutate-gene [gene]
+    (if (< (rand-int 100) mutation-prob) (rand-gene) gene))
+  (mapv mutate-gene dna))
 
 
 ; Fitness evaluation functions
@@ -84,6 +92,16 @@
   (def final-state (nth (iterate make-step [the-map '(1 1) 0]) simul-steps))
   (nth final-state 2))
 
+
+; Evolution functions
+(defn evolve [individuals]
+  "Takes a bunch of individuals (DNAs) and cross-breeds by fitness."
+  (def the-map (rand-map))
+  (def ordered (reverse (sort-by (fn[dna] (simulate dna the-map)) individuals)))
+  (def crossed (map (fn [pair]
+         (let [[a b] (vec pair)] (cross a b)))
+       (partition 2 ordered)))
+  (concat crossed (map mutate crossed)))
 
 (defn -main
   "I don't do a whole lot ... yet."
