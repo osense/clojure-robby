@@ -11,6 +11,9 @@
 (def simul-steps 100) ; Steps to allow the robot to make in a simulation.
 (def tiles [\w \p \g]) ; Tiles that populate the map: wall, path, and gold.
 (def actions [\u \d \l \r \p]) ; Actions the robot can take: up, down, left, right, pick up.
+(def dir-vects ['(1 0) '(-1 0) '(-1 0) '(0 1) '(0 0)]) ; Direction vectors, corresponding to the actions.
+(def action-penalty 5) ; How many points robot loses when hitting the wall or picking up when it shouldn't.
+(def gold-value 10) ; How many points picking up gold is worth.
 
 
 ; DNA functions
@@ -35,14 +38,51 @@
     (if (or (= x 0) (= y 0) (= x last-coord) (= y last-coord))
       \w
       (if (< (rand-int 100) gold-prob) \g \p)))
-  (map (fn [y] (map (fn [x] (gen-tile x y)) (range map-size))) (range map-size)))
+  (def map-coords (vec (range map-size)))
+  (mapv (fn [y] (mapv (fn [x] (gen-tile x y)) map-coords)) map-coords))
 
-(defn on-index [themap x y]
+(defn get-tile [the-map pos]
   "Given a map and coordinates, evaluates to what is on the map at the position."
-  (nth (nth themap y) x))
+  (let [[x y] (vec pos)]
+    (nth (nth the-map y) x)))
 
-;(defn simulate [dna onmap]
- ; "Simulates the DNA on a map. Evaluates to the score the robot achieved in simul-steps."
+(defn set-tile [the-map pos tile]
+  "Returns a copy of the map where the tile on pos has been replaced."
+  (let [[x y] (vec pos)]
+    (def new-row (assoc (nth the-map y) x tile))
+    (assoc the-map y new-row)))
+
+(defn get-tile-index [t]
+  "Returns the numeric index of a tile."
+  (+ 1 (.indexOf tiles t)))
+
+(defn add-vec [v1 v2]
+  "Adds 2 vectors"
+  (map + v1 v2))
+
+(defn simulate [dna the-map]
+  "Simulates the DNA on a map. Evaluates to the score the robot achieved in simul-steps."
+  (defn make-step [[current-map pos score]]
+    "Makes a single step on the map, according to the DNA sequence."
+    (defn nearby-tiles-idx []
+      "Returns the tile indices of nearby tiles in a vector."
+      (def nearby-tiles (map (fn[v] (get-tile the-map (add-vec pos v))) dir-vects))
+      (map get-tile-index nearby-tiles))
+    (def action (nth dna (- (reduce * (nearby-tiles-idx)) 1)))
+    (case action
+      (\l \r \u \d)
+      (do
+        (def new-pos (add-vec pos (nth dir-vects (get-tile-index action))))
+        (if (not= \w (get-tile current-map new-pos))
+          [current-map new-pos score]
+          [current-map pos (- score action-penalty)]))
+      \p
+      (do
+        (if (= \g (get-tile current-map pos))
+          [(set-tile current-map pos \p) pos (+ score gold-value)]
+          [current-map pos (- score action-penalty)]))))
+  (def final-state (nth (iterate make-step [the-map '(1 1) 0]) simul-steps))
+  (nth final-state 2))
 
 
 (defn -main
