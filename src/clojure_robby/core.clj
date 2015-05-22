@@ -11,6 +11,8 @@
 (def simul-steps 100) ; Steps to allow the robot to make in a simulation.
 (def tiles [\w \p \g]) ; Tiles that populate the map: wall, path, and gold.
 (def actions [\u \d \l \r \x \p]) ; Actions the robot can take: up, down, left, right, pick up.
+
+(def multipliers (map (fn [n] (** (count tiles) n)) (range (count actions)))) ; Used to calculate genes to use.
 (def dir-vects ['(0 -1) '(0 1) '(-1 0) '(1 0) '(0 0)]) ; Direction vectors, corresponding to the 4 actions.
 
 (def mutation-prob 5) ; Probability in 100 that a gene will mutate.
@@ -74,12 +76,11 @@
 
 (defn simulate [dna the-map]
   "Simulates the DNA on a map. Evaluates to the score the robot achieved in simul-steps."
-  (let [multipliers (map (fn [n] (** (count tiles) n)) (range (count actions)))
-        make-step
+  (let [make-step
         (fn [[current-map pos score]]
           "Makes a single step on the map, according to the DNA sequence."
-          (let [situation (map (fn[v] (get-tile current-map (add-vec pos v))) dir-vects)
-                action-idx (reduce + (map * (map get-tile-index situation) multipliers))
+          (let [situation (map (fn[v] (get-tile-index (get-tile current-map (add-vec pos v)))) dir-vects)
+                action-idx (reduce + (map * situation multipliers))
                 action (nth dna action-idx)
                 step-to 
                   (fn [the-pos]
@@ -98,7 +99,8 @@
               (if (= \g (get-tile current-map pos))
                 [(set-tile current-map pos \p) pos (+ score gold-value)]
                 [current-map pos (- score action-penalty)]))))
-        [_ final-pos final-score] (nth (iterate make-step [the-map '(1 1) 0]) simul-steps)]
+        iteration (iterate make-step [the-map '(1 1) 0])
+        [_ final-pos final-score] (nth iteration simul-steps)]
     final-score))
 
 
