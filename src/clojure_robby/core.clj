@@ -8,7 +8,7 @@
 (def individual-count 30); The amount of individuals to operate on.
 
 (def map-size 20) ; Size of the map used for robot simulation.
-(def gold-prob 20) ; Probability in 100 that a tile contains gold.
+(def gold-prob 50) ; Probability in 100 that a tile contains gold.
 (def simul-steps 100) ; Steps to allow the robot to make in a simulation.
 (def tiles [\w \p \g]) ; Tiles that populate the map: wall, path, and gold.
 (def actions [\u \d \l \r \p \x]) ; Actions the robot can take: up, down, left, right, pick up, move random.
@@ -16,8 +16,9 @@
 (def multipliers (map (fn [n] (** (count tiles) n)) (range 5))) ; Used to calculate genes to use.
 (def dir-vects ['(0 -1) '(0 1) '(-1 0) '(1 0) '(0 0)]) ; Direction vectors, corresponding to the 5 actions.
 
-(def mutation-prob 4) ; Probability in 100 that a gene will mutate.
-(def action-penalty 5) ; How many points robot loses when hitting the wall or picking up when it shouldn't.
+(def mutation-prob 1) ; Probability in 100 that a gene will mutate.
+(def wall-penalty 5) ; How many points robot loses when hitting the wall
+(def pick-up-penalty 1) ; How many points the robot loses when pickin up on an empty spot.
 (def gold-value 10) ; How many points picking up gold is worth.
 
 
@@ -87,7 +88,7 @@
                   (fn [the-pos]
                     (if (not= \w (get-tile current-map the-pos))
                       [current-map the-pos score]
-                      [current-map pos (- score action-penalty)]))]
+                      [current-map pos (- score wall-penalty)]))]
             ;(print pos)
             (case action
               (\l \r \u \d)
@@ -99,7 +100,7 @@
               \p
               (if (= \g (get-tile current-map pos))
                 [(set-tile current-map pos \p) pos (+ score gold-value)]
-                [current-map pos (- score action-penalty)]))))
+                [current-map pos (- score pick-up-penalty)]))))
         iteration (iterate make-step [the-map [1 1] 0])
         [_ final-pos final-score] (nth iteration simul-steps)]
     final-score))
