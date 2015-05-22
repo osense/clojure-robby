@@ -12,7 +12,7 @@
 (def tiles [\w \p \g]) ; Tiles that populate the map: wall, path, and gold.
 (def actions [\u \d \l \r \x \p]) ; Actions the robot can take: up, down, left, right, pick up.
 
-(def multipliers (map (fn [n] (** (count tiles) n)) (range (count actions)))) ; Used to calculate genes to use.
+(def multipliers (map (fn [n] (** (count tiles) n)) (range 5))) ; Used to calculate genes to use.
 (def dir-vects ['(0 -1) '(0 1) '(-1 0) '(1 0) '(0 0)]) ; Direction vectors, corresponding to the 4 actions.
 
 (def mutation-prob 5) ; Probability in 100 that a gene will mutate.
