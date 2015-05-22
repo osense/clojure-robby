@@ -53,12 +53,12 @@
 
 (defn get-tile [the-map pos]
   "Given a map and coordinates, evaluates to what is on the map at the position."
-  (let [[x y] (vec pos)]
+  (let [[x y] pos]
     (nth (nth the-map y) x)))
 
 (defn set-tile [the-map pos tile]
   "Returns a copy of the map where the tile on pos has been replaced."
-  (let [[x y] (vec pos)
+  (let [[x y] pos
         new-row (assoc (nth the-map y) x tile)]
     (assoc the-map y new-row)))
 
@@ -72,7 +72,7 @@
 
 (defn add-vec [v1 v2]
   "Adds 2 vectors"
-  (map + v1 v2))
+  (mapv + v1 v2))
 
 (defn simulate [dna the-map]
   "Simulates the DNA on a map. Evaluates to the score the robot achieved in simul-steps."
@@ -99,7 +99,7 @@
               (if (= \g (get-tile current-map pos))
                 [(set-tile current-map pos \p) pos (+ score gold-value)]
                 [current-map pos (- score action-penalty)]))))
-        iteration (iterate make-step [the-map '(1 1) 0])
+        iteration (iterate make-step [the-map [1 1] 0])
         [_ final-pos final-score] (nth iteration simul-steps)]
     final-score))
 
