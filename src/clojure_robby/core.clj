@@ -7,13 +7,13 @@
 
 
 (def map-size 20) ; Size of the map used for robot simulation.
-(def gold-prob 10) ; Probability in 100 that a tile contains gold.
+(def gold-prob 20) ; Probability in 100 that a tile contains gold.
 (def simul-steps 100) ; Steps to allow the robot to make in a simulation.
 (def tiles [\w \p \g]) ; Tiles that populate the map: wall, path, and gold.
-(def actions [\u \d \l \r \p]) ; Actions the robot can take: up, down, left, right, pick up.
+(def actions [\u \d \l \r \x \p]) ; Actions the robot can take: up, down, left, right, pick up.
 (def dir-vects ['(0 -1) '(0 1) '(-1 0) '(1 0) '(0 0)]) ; Direction vectors, corresponding to the actions.
 
-(def mutation-prob 2) ; Probability in 100 that a gene will mutate.
+(def mutation-prob 10) ; Probability in 100 that a gene will mutate.
 (def action-penalty 5) ; How many points robot loses when hitting the wall or picking up when it shouldn't.
 (def gold-value 10) ; How many points picking up gold is worth.
 
@@ -22,8 +22,8 @@
 (defn rand-dna []
   "Initializes a vector of random DNA."
   (defn rand-gene []
-    (nth actions (rand-int (count actions))))
-  (vec (repeatedly (** (count tiles) (count actions)) rand-gene)))
+    (rand-nth actions))
+  (vec (repeatedly (** (count tiles) 5) rand-gene)))
 
 (defn cross [a b]
   "Crosses two vectors of DNA."
@@ -77,6 +77,7 @@
   "Simulates the DNA on a map. Evaluates to the score the robot achieved in simul-steps."
   (defn make-step [[current-map pos score]]
     "Makes a single step on the map, according to the DNA sequence."
+    ;(print pos)
     (defn get-situation []
       "Returns the tile situation at the current pos."
       (def nearby-tiles (map (fn[v] (get-tile the-map (add-vec pos v))) dir-vects))
@@ -93,6 +94,12 @@
         (if (not= \w (get-tile current-map new-pos))
           [current-map new-pos score]
           [current-map pos (- score action-penalty)]))
+      \x
+      (do
+        (def new-pos (add-vec pos (rand-nth (take 4 dir-vects))))
+        (if (not= \w (get-tile current-map new-pos))
+          [current-map new-pos score]
+          [current-map pos (- score action-penalty)]))
       \p
       (do
         (if (= \g (get-tile current-map pos))
@@ -106,12 +113,12 @@
 (defn evolve [individuals]
   "Takes a bunch of individuals (DNAs) and cross-breeds by fitness."
   (def the-map (rand-map))
-  (def ordered (reverse (sort-by (fn[dna] (simulate dna the-map)) individuals)))
-  (println (simulate (first ordered) the-map))
-  (def crossed (map (fn [pair]
-         (let [[a b] (vec pair)] (cross a b)))
-       (partition 2 ordered)))
-  (concat crossed (map mutate crossed)))
+  (def ordered (sort-by (fn[dna] (simulate dna the-map)) individuals))
+  (println (simulate (last ordered) the-map))
+  (def crossed 
+    (map (fn [pair] (let [[a b] (vec pair)] (cross a b)))
+         (partition 2 ordered)))
+  (concat (mutate crossed) ()))
 
 (defn -main
   "I don't do a whole lot ... yet."
