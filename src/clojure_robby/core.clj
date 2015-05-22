@@ -133,5 +133,6 @@
 
 ; Entry point
 (defn -main [num & args]
-  (nth-best num))
+  (println (nth-best (Integer. num)))
+  (shutdown-agents))
 
