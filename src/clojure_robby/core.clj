@@ -1,12 +1,10 @@
 (ns clojure-robby.core
   (:gen-class))
 
-(defn ** [x n]
-  "Raises x to the power of n."
-  (reduce * (repeat n x)))
-
+(use 'clojure-robby.util)
 
 (def map-size 20) ; Size of the map used for robot simulation.
+(def evolution-map-count 20) ; The amount of maps to evaluate each individual on.
 (def gold-prob 20) ; Probability in 100 that a tile contains gold.
 (def simul-steps 100) ; Steps to allow the robot to make in a simulation.
 (def tiles [\w \p \g]) ; Tiles that populate the map: wall, path, and gold.
@@ -79,8 +77,8 @@
   (let [make-step
         (fn [[current-map pos score]]
           "Makes a single step on the map, according to the DNA sequence."
-          (let [situation (map (fn[v] (get-tile-index (get-tile current-map (add-vec pos v)))) dir-vects)
-                action-idx (reduce + (map * situation multipliers))
+          (let [situation (mapv (fn[v] (get-tile-index (get-tile current-map (add-vec pos v)))) dir-vects)
+                action-idx (reduce + (mapv * situation multipliers))
                 action (nth dna action-idx)
                 step-to 
                   (fn [the-pos]
@@ -106,13 +104,17 @@
 
 ; Evolution functions
 (defn evolve [individuals]
-  "Takes a bunch of individuals (DNAs) and cross-breeds by fitness."
-  (let [the-map (rand-map)
+  "Takes a bunch of individuals (DNAs), throws away the weak, and cross-breeds."
+  (let [the-maps (repeatedly evolution-map-count rand-map)
+        eval-map-fn (fn [a-map]
+                      (mapv (fn [a-dna] (simulate a-dna a-map)) individuals))
+        evaluated (reduce (partial mapv +) (pmap eval-map-fn the-maps))
         to-drop (/ (count individuals) 2)
-        ordered (drop to-drop (sort-by (fn[dna] (simulate dna the-map)) individuals))
-        breed (fn [dna] (cross dna (rand-nth ordered)))]
-    (println (simulate (last ordered) the-map))
-    (map mutate (concat (map breed ordered) (map breed ordered)))))
+        good (drop to-drop (sort-by (fn [dna] (nth evaluated (.indexOf individuals dna))) individuals))
+        breed-fn (fn [dna]
+                   (cross dna (rand-nth good)))]
+    (println (simulate (last good) (first the-maps)))
+    (mapv mutate (concat (mapv breed-fn good) (mapv breed-fn good)))))
 
 (defn -main
   "I don't do a whole lot ... yet."
