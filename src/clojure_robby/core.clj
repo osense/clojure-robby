@@ -3,17 +3,20 @@
 
 (use 'clojure-robby.util)
 
+
+(def map-count 20) ; The amount of maps to evaluate each individual on.
+(def individual-count 30); The amount of individuals to operate on.
+
 (def map-size 20) ; Size of the map used for robot simulation.
-(def evolution-map-count 20) ; The amount of maps to evaluate each individual on.
 (def gold-prob 20) ; Probability in 100 that a tile contains gold.
 (def simul-steps 100) ; Steps to allow the robot to make in a simulation.
 (def tiles [\w \p \g]) ; Tiles that populate the map: wall, path, and gold.
-(def actions [\u \d \l \r \x \p]) ; Actions the robot can take: up, down, left, right, pick up.
+(def actions [\u \d \l \r \p \x]) ; Actions the robot can take: up, down, left, right, pick up, move random.
 
 (def multipliers (map (fn [n] (** (count tiles) n)) (range 5))) ; Used to calculate genes to use.
-(def dir-vects ['(0 -1) '(0 1) '(-1 0) '(1 0) '(0 0)]) ; Direction vectors, corresponding to the 4 actions.
+(def dir-vects ['(0 -1) '(0 1) '(-1 0) '(1 0) '(0 0)]) ; Direction vectors, corresponding to the 5 actions.
 
-(def mutation-prob 5) ; Probability in 100 that a gene will mutate.
+(def mutation-prob 4) ; Probability in 100 that a gene will mutate.
 (def action-penalty 5) ; How many points robot loses when hitting the wall or picking up when it shouldn't.
 (def gold-value 10) ; How many points picking up gold is worth.
 
@@ -103,20 +106,32 @@
 
 
 ; Evolution functions
-(defn evolve [individuals]
-  "Takes a bunch of individuals (DNAs), throws away the weak, and cross-breeds."
-  (let [the-maps (repeatedly evolution-map-count rand-map)
-        eval-map-fn (fn [a-map]
+(defn select [individuals]
+  "Takes a bunch of individuals (DNAs) and returns the better half of the population, sorted from worst."
+  (let [the-maps (repeatedly map-count rand-map)
+        eval-map (fn [a-map]
                       (mapv (fn [a-dna] (simulate a-dna a-map)) individuals))
-        evaluated (reduce (partial mapv +) (pmap eval-map-fn the-maps))
-        to-drop (/ (count individuals) 2)
-        good (drop to-drop (sort-by (fn [dna] (nth evaluated (.indexOf individuals dna))) individuals))
-        breed-fn (fn [dna]
-                   (cross dna (rand-nth good)))]
-    (println (simulate (last good) (first the-maps)))
-    (mapv mutate (concat (mapv breed-fn good) (mapv breed-fn good)))))
+        fitnesses (reduce (partial mapv +) (pmap eval-map the-maps))
+        sorted (sort-by #(nth fitnesses (.indexOf individuals %)) individuals)]
+    (println (float (/ (reduce + fitnesses) (* individual-count map-count))))
+    (drop (/ (count individuals) 2) sorted)))
 
-(defn -main
-  "I don't do a whole lot ... yet."
-  [& args]
-  (println "Hello, World!"))
+(defn breed [individuals]
+  "Takes a bunch of individuals (DNAs) and returns twice as many after breeding."
+  (let [breed-one (fn [dna]
+                   (cross dna (rand-nth individuals)))
+        breed-all (fn []
+                    (mapv breed-one individuals))]
+    (mapv mutate (concat (breed-all) (breed-all)))))
+
+(defn nth-best [n]
+  "Returns the best individual after n generations."
+  (let [population (repeatedly individual-count rand-dna)
+        iteration (iterate #(breed (select %)) population)]
+    (last (nth iteration n))))
+
+
+; Entry point
+(defn -main [num & args]
+  (nth-best num))
+
