@@ -13,7 +13,7 @@
 (def actions [\u \d \l \r \x \p]) ; Actions the robot can take: up, down, left, right, pick up.
 (def dir-vects ['(0 -1) '(0 1) '(-1 0) '(1 0) '(0 0)]) ; Direction vectors, corresponding to the actions.
 
-(def mutation-prob 10) ; Probability in 100 that a gene will mutate.
+(def mutation-prob 5) ; Probability in 100 that a gene will mutate.
 (def action-penalty 5) ; How many points robot loses when hitting the wall or picking up when it shouldn't.
 (def gold-value 10) ; How many points picking up gold is worth.
 
@@ -113,12 +113,11 @@
 (defn evolve [individuals]
   "Takes a bunch of individuals (DNAs) and cross-breeds by fitness."
   (def the-map (rand-map))
-  (def ordered (sort-by (fn[dna] (simulate dna the-map)) individuals))
+  (def to-drop (/ (count individuals) 2))
+  (def ordered (drop to-drop (sort-by (fn[dna] (simulate dna the-map)) individuals)))
   (println (simulate (last ordered) the-map))
-  (def crossed 
-    (map (fn [pair] (let [[a b] (vec pair)] (cross a b)))
-         (partition 2 ordered)))
-  (concat (mutate crossed) ()))
+  (let [breed (fn [dna] (cross dna (rand-nth ordered)))]
+    (map mutate (concat (map breed ordered) (map breed ordered)))))
 
 (defn -main
   "I don't do a whole lot ... yet."
