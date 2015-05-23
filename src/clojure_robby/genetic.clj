@@ -107,3 +107,16 @@
         [_ _ final-pos final-score] (nth iteration simul-steps)]
     final-score))
 
+(defn write-simulation [a-dna file]
+  "Simulates the DNA and writes each step (score and map) into the given filename."
+  (let [prettify (fn [some-map] (mapv (partial apply str) some-map))
+        comma (symbol (str \,))
+        commify (fn [some-map] (vec (apply concat (interpose [comma] (partition 1 some-map)))))
+        a-map (rand-map)
+        frame (iterate make-step [a-dna a-map [1 1] 0])
+        frames (mapv
+                 (fn [[_ map-frame pos score]]
+                   (str "(" score ", " (commify (prettify (set-tile map-frame pos \R))) ")\n"))
+                 (take simul-steps frame))]
+    (write-lines file frames)))
+
