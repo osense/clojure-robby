@@ -78,32 +78,32 @@
   "Adds 2 vectors"
   (mapv + v1 v2))
 
-(defn simulate [dna the-map]
+
+(defn make-step [[a-dna a-map pos score]]
+  "Makes a single step on the map, according to the DNA sequence."
+  (let [situation (mapv (fn[v] (get-tile-index (get-tile a-map (add-vec pos v)))) dir-vects)
+        action-idx (reduce + (mapv * situation multipliers))
+        action (nth a-dna action-idx)
+        step-to 
+        (fn [the-pos]
+          (if (not= \w (get-tile a-map the-pos))
+            [a-dna a-map the-pos score]
+            [a-dna a-map pos (- score wall-penalty)]))]
+    (case action
+      (\l \r \u \d)
+      (let [new-pos (add-vec pos (nth dir-vects (get-action-index action)))]
+        (step-to new-pos))
+      \x
+      (let [new-pos (add-vec pos (rand-nth (take 4 dir-vects)))]
+        (step-to new-pos))
+      \p
+      (if (= \g (get-tile a-map pos))
+        [a-dna (set-tile a-map pos \p) pos (+ score gold-value)]
+        [a-dna a-map pos (- score pick-up-penalty)]))))
+
+(defn simulate [a-dna a-map]
   "Simulates the DNA on a map. Evaluates to the score the robot achieved in simul-steps."
-  (let [make-step
-        (fn [[current-map pos score]]
-          "Makes a single step on the map, according to the DNA sequence."
-          (let [situation (mapv (fn[v] (get-tile-index (get-tile current-map (add-vec pos v)))) dir-vects)
-                action-idx (reduce + (mapv * situation multipliers))
-                action (nth dna action-idx)
-                step-to 
-                (fn [the-pos]
-                  (if (not= \w (get-tile current-map the-pos))
-                    [current-map the-pos score]
-                    [current-map pos (- score wall-penalty)]))]
-            ;(print pos)
-            (case action
-              (\l \r \u \d)
-              (let [new-pos (add-vec pos (nth dir-vects (get-action-index action)))]
-                (step-to new-pos))
-              \x
-              (let [new-pos (add-vec pos (rand-nth (take 4 dir-vects)))]
-                (step-to new-pos))
-              \p
-              (if (= \g (get-tile current-map pos))
-                [(set-tile current-map pos \p) pos (+ score gold-value)]
-                [current-map pos (- score pick-up-penalty)]))))
-        iteration (iterate make-step [the-map [1 1] 0])
-        [_ final-pos final-score] (nth iteration simul-steps)]
+  (let [iteration (iterate make-step [a-dna a-map [1 1] 0])
+        [_ _ final-pos final-score] (nth iteration simul-steps)]
     final-score))
 
