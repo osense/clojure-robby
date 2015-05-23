@@ -129,11 +129,20 @@
                     (mapv breed-one individuals))]
     (mapv mutate (concat (breed-all) (breed-all)))))
 
-(defn nth-best [n]
-  "Returns the best individual after n generations."
-  (let [population (repeatedly individual-count rand-dna)
-        iteration (iterate #(breed (select %)) population)]
-    (last (nth iteration n))))
+(defn evolve-from [population n]
+  "Returns the population after n generations, starting with a given population."
+  (let [iteration (iterate #(breed (select %)) population)]
+    (nth iteration n)))
+
+(defn evolve [n]
+  "Returns the population after n generations, starting with a random population."
+  (evolve-from n (repeatedly individual-count rand-dna)))
+
+(defn best [population]
+  "Returns the best individual in a generation."
+  (if (> (count population) 1)
+    (best (select population))
+    (first population)))
 
 
 ; Entry point, starts a REPL
@@ -151,9 +160,11 @@
 (defn help []
   (doall (map println ["Clojure-robby, a genetic algorithm that evolves a simple robot.",
                        "Main funcions:",
-                       "   help          - Prints this help.",
-                       "   config        - Prints current configuration."
-                       "   nth-best n    - Returns the best individual after evolving n generations.",
+                       "   help           - Prints this help.",
+                       "   config         - Prints current configuration."
+                       "   evolve n       - Returns a random population, after evolving for n generations.",
+                       "   evolve-from p n- Returns population p, after evolving it for n generations.",
+                       "   best p         - Returns the DNA of the best individual in a population.",
                        "",
                        "Example usage:",
                        "(def champ (nth-best 50))"]))
