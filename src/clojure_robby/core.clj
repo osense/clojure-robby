@@ -32,7 +32,7 @@
 
 (defn evolve [n]
   "Returns the population after n generations, starting with a random population."
-  (evolve-from n (repeatedly individual-count rand-dna)))
+  (evolve-from (repeatedly individual-count rand-dna) n))
 
 (defn best [population]
   "Returns the best individual in a generation."
