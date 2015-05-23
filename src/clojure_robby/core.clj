@@ -3,9 +3,6 @@
   (:use clojure-robby.genetic))
 
 
-;(use 'clojure-robby.genetic)
-
-
 ; Evolution functions
 (defn select [individuals]
   "Takes a bunch of individuals (DNAs) and returns the better half of the population, sorted from worst."
