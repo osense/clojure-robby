@@ -1,6 +1,7 @@
 (ns clojure-robby.core
   (:gen-class))
 
+
 (use 'clojure-robby.util)
 
 
@@ -20,6 +21,9 @@
 (def wall-penalty 5) ; How many points robot loses when hitting the wall
 (def pick-up-penalty 1) ; How many points the robot loses when pickin up on an empty spot.
 (def gold-value 10) ; How many points picking up gold is worth.
+
+(def configs ['map-count, 'individual-count, 'map-size, 'gold-prob, 'simul-steps,
+              'mutation-prob, 'wall-penalty, 'pick-up-penalty, 'gold-value]) ; List of configuration variables.
 
 
 ; DNA functions
@@ -132,8 +136,32 @@
     (last (nth iteration n))))
 
 
-; Entry point
-(defn -main [num & args]
-  (println (nth-best (Integer. num)))
-  (shutdown-agents))
+; Entry point, starts a REPL
+(defn -main [& args]
+  (let [repl
+        (fn []
+          (print "=> ")
+          (flush)
+          (println (eval (read-string (read-line)))))]
+    (eval (use 'clojure-robby.core))
+    (println "Started REPL. Type (help) for help and ^C to exit.")
+    (while true (try (repl) (catch Exception e (println (.getMessage e)))))
+    (shutdown-agents)))
+
+(defn help []
+  (doall (map println ["Clojure-robby, a genetic algorithm that evolves a simple robot.",
+                       "Main funcions:",
+                       "   help          - Prints this help.",
+                       "   config        - Prints current configuration."
+                       "   nth-best n    - Returns the best individual after evolving n generations.",
+                       "",
+                       "Example usage:",
+                       "(def champ (nth-best 50))"]))
+  'ok)
+
+(defn config []
+  (doall (map (fn [key] (println key "=" (eval key))) configs))
+  (println "Redefine any of these by calling (def name value); e.g. (def gold-prob 20)")
+  'ok)
+
 
