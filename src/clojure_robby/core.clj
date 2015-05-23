@@ -40,27 +40,29 @@
 
 ; Entry point, starts a REPL
 (defn -main [& args]
-  (let [repl
+  (let [rep
         (fn []
           (print "=> ")
           (flush)
           (println (eval (read-string (read-line)))))]
     (eval (use 'clojure-robby.core 'clojure-robby.genetic))
     (println "Started REPL. Type (help) for help and ^C to exit.")
-    (while true (try (repl) (catch Exception e (println (.getMessage e)))))
+    (while true (try (rep) (catch Exception e (println (.getMessage e)))))
     (shutdown-agents)))
 
 (defn help []
-  (doall (map println ["Clojure-robby, a genetic algorithm that evolves a simple robot.",
-                       "Main funcions:",
-                       "   help           - Prints this help.",
-                       "   config         - Prints current configuration."
-                       "   evolve n       - Returns a random population, after evolving for n generations.",
-                       "   evolve-from p n- Returns population p, after evolving it for n generations.",
-                       "   best p         - Returns the DNA of the best individual in a population.",
-                       "",
-                       "Example usage:",
-                       "(def champ (nth-best 50))"]))
+  (doall
+    (map println 
+         ["Clojure-robby, a genetic algorithm that evolves a simple robot.",
+          "Main funcions:",
+          "   help           - Prints this help.",
+          "   config         - Prints current configuration."
+          "   evolve n       - Returns a random population, after evolving for n generations.",
+          "   evolve-from p n- Returns population p, after evolving it for n generations.",
+          "   best p         - Returns the DNA of the best individual in a population.",
+          "",
+          "Example usage:",
+          "(def champ (nth-best 50))"]))
   'ok)
 
 (defn config []
