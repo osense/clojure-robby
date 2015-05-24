@@ -1,6 +1,5 @@
-(ns clojure-robby.genetic)
-
-(use 'clojure-robby.util)
+(ns clojure-robby.genetic
+  (:use clojure-robby.util))
 
 
 (def map-count 20) ; The amount of maps to evaluate each individual on.
@@ -23,6 +22,16 @@
 (def configs ['map-count, 'individual-count, 'map-size, 'gold-prob, 'simul-steps,
               'mutation-prob, 'wall-penalty, 'pick-up-penalty, 'gold-value]) ; List of configuration variables.
 
+; Meh.
+(defn set-map-count [val] (def map-count val))
+(defn set-individual-count [val] (def individual-count val))
+(defn set-map-size [val] (def map-size val))
+(defn set-gold-prob [val] (def gold-prob val))
+(defn set-simul-steps [val] (def simul-steps val))
+(defn set-mutation-prob [val] (def mutation-prob val))
+(defn set-wall-penalty [val] (def wall-penalty val))
+(defn set-pick-up-penalty [val] (def pick-up-penalty val))
+(defn set-gold-value [val] (def gold-value val))
 
 ; DNA functions
 (defn rand-gene []
@@ -106,6 +115,9 @@
   (let [iteration (iterate make-step [a-dna a-map [1 1] 0])
         [_ _ final-pos final-score] (nth iteration simul-steps)]
     final-score))
+
+(defn evaluate [a-dna]
+  (simulate a-dna (rand-map)))
 
 (defn write-simulation [a-dna file]
   "Simulates the DNA and writes each step (score and map) into the given filename."

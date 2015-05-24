@@ -37,18 +37,17 @@
     (best (select population))
     (first population)))
 
-
 ; Entry point, starts a REPL
 (defn -main [& args]
-  (let [rep
-        (fn []
-          (print "=> ")
-          (flush)
-          (println (eval (read-string (read-line)))))]
-    (eval (use 'clojure-robby.core 'clojure-robby.genetic))
-    (println "Started REPL. Type (help) for help and ^C to exit.")
-    (while true (try (rep) (catch Exception e (println (.getMessage e)))))
-    (shutdown-agents)))
+    (let [rep
+          (fn []
+            (print "=> ")
+            (flush)
+            (println (eval (read-string (read-line)))))]
+      (use 'clojure-robby.core 'clojure-robby.genetic)
+      (println "Started REPL. Type (help) for help and ^C to exit.")
+      (while true (try (rep) (catch Exception e (println (.getMessage e)))))
+      (shutdown-agents)))
 
 (defn help []
   (doall
@@ -62,12 +61,20 @@
           "   best p         - Returns the DNA of the best individual in a population.",
           "",
           "Example usage:",
-          "(def champ (nth-best 50))"]))
+          "(def generation1 (evolve 50))",
+          "(def robot1 (best generation1))",
+          "(def gen2 (evolve 100 generation1))",
+          "(def r2 (best g2))",
+          "(evaluate r2)",
+          "(write-simulation r2 \"sim-data\""]))
   'ok)
 
 (defn config []
   (doall (map (fn [key] (println key "=" (eval key))) configs))
-  (println "Redefine any of these by calling (def name value); e.g. (def gold-prob 20)")
+  (println "Redefine any of these by calling (set-<name> value); e.g. (set-gold-prob 20)")
   'ok)
 
+
+(in-ns 'user)
+(use 'clojure-robby.core 'clojure-robby.genetic)
 
