@@ -54,24 +54,29 @@
     (map println 
          ["Clojure-robby, a genetic algorithm that evolves a simple robot.",
           "Main funcions:",
-          "   help           - Prints this help.",
-          "   config         - Prints current configuration."
-          "   evolve n       - Returns a random population, after evolving for n generations.",
-          "   evolve-from p n- Returns population p, after evolving it for n generations.",
-          "   best p         - Returns the DNA of the best individual in a population.",
+          "   help        - Prints this help.",
+          "   config      - Prints current configuration."
+          "   evolve n    - Returns a random population, after evolving for n generations.",
+          "   evolve-from p n",
+          "               - Returns population p, after evolving it for n generations.",
+          "   best p      - Returns the DNA of the best individual in a population.",
+          "   evaluate r  - Returns the score robot r achieved on a random map.",
+          "   write-simulation r f",
+          "               - Writes simulation data of robor r into file f.",
+          "                 Used for generating the GIF.",
           "",
           "Example usage:",
           "(def generation1 (evolve 50))",
           "(def robot1 (best generation1))",
-          "(def gen2 (evolve 100 generation1))",
-          "(def r2 (best g2))",
-          "(evaluate r2)",
-          "(write-simulation r2 \"sim-data\""]))
+          "(def gen2 (evolve-from generation1 100))",
+          "(def robot2 (best gen2))",
+          "(evaluate robot2)",
+          "(write-simulation robot2 \"sim-data.txt\")"]))
   'ok)
 
 (defn config []
   (doall (map (fn [key] (println key "=" (eval key))) configs))
-  (println "Redefine any of these by calling (set-<name> value); e.g. (set-gold-prob 20)")
+  (println "Redefine any of these by calling (set-<name> <value>); e.g. (set-gold-prob 20)")
   'ok)
 
 
