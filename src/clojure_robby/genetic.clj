@@ -14,7 +14,7 @@
 (def multipliers (map (fn [n] (** (count tiles) n)) (range 5))) ; Used to calculate genes to use.
 (def dir-vects ['(0 -1) '(0 1) '(-1 0) '(1 0) '(0 0)]) ; Direction vectors, corresponding to the 5 actions.
 
-(def mutation-prob 1) ; Probability in 100 that a gene will mutate.
+(def mutation-prob 0.01) ; Probability that a gene will mutate.
 (def wall-penalty 5) ; How many points robot loses when hitting the wall
 (def pick-up-penalty 1) ; How many points the robot loses when pickin up on an empty spot.
 (def gold-value 10) ; How many points picking up gold is worth.
@@ -49,7 +49,7 @@
 
 (defn mutate [dna]
   "Randomly replace some genes in the DNA."
-  (let [mutate-gene (fn [gene] (if (< (rand-int 100) mutation-prob) (rand-gene) gene))]
+  (let [mutate-gene (fn [gene] (if (< (rand) mutation-prob) (rand-gene) gene))]
     (mapv mutate-gene dna)))
 
 
