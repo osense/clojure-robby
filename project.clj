@@ -1,4 +1,4 @@
-(defproject clojure-robby "1.0"
+(defproject clojure-robby "1.1"
   :description "A simple genetic algorithm."
   :url "https://github.com/osense/clojure-robby"
   :license {:name "The MIT License"
